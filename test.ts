@@ -15,8 +15,8 @@ Deno.test("throws error when requests are not equal", async () => {
     }),
   });
 
-  mockFetch(request, new Response());
-  assertThrowsAsync<Response>(() =>
+  await mockFetch(request, new Response());
+  await assertThrowsAsync<Response>(() =>
     fetch("https://github.com/satyarohith", {
       method: "POST",
       headers: {

@@ -14,14 +14,7 @@ export async function getRequestString(request: Request) {
     request.method +
     JSON.stringify(Object.fromEntries(request.headers.entries())) +
     hash.toString() +
-    request.cache +
-    request.credentials +
-    request.mode +
-    request.redirect +
-    request.destination +
-    request.integrity +
-    request.referrer +
-    request.referrerPolicy
+    request.redirect
   );
 }
 
