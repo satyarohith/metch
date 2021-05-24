@@ -4,18 +4,27 @@ const store = new Map<string, Response>();
 const originalFetch = globalThis.fetch;
 
 /** Generates a string out of a `Request` object. */
-export async function getRequestString(request: Request) {
+export async function getRequestString(request: Request, options?: Options) {
+  let bodyHash = "";
   request = request.clone();
-  const hash = createHash("md5");
-  hash.update(await request.arrayBuffer());
+
+  if (options?.body) {
+    const hash = createHash("md5");
+    hash.update(await request.arrayBuffer());
+    bodyHash = hash.toString();
+  }
 
   return (
     request.url +
     request.method +
     JSON.stringify(Object.fromEntries(request.headers.entries())) +
-    hash.toString() +
+    bodyHash +
     request.redirect
   );
+}
+export interface Options {
+  /** Whether or not to use the body of request while matching requests. */
+  body: boolean;
 }
 
 /** Mock fetch() requests
@@ -25,8 +34,12 @@ export async function getRequestString(request: Request) {
  *
  * @throws 'request not mocked' error if the request of fetch() isn't in the store.
  */
-export async function mockFetch(request: Request, response: Response) {
-  store.set(await getRequestString(request), response);
+export async function mockFetch(
+  request: Request,
+  response: Response,
+  options?: Options,
+) {
+  store.set(await getRequestString(request, options), response);
 
   globalThis.fetch = async function fetch(
     input: string | URL | Request,
@@ -36,7 +49,7 @@ export async function mockFetch(request: Request, response: Response) {
       input = input.toString();
     }
     const originalRequest = new Request(input, init);
-    const requestString = await getRequestString(originalRequest);
+    const requestString = await getRequestString(originalRequest, options);
 
     if (!store.has(requestString)) {
       console.warn(
