@@ -39,7 +39,10 @@ export async function mockFetch(request: Request, response: Response) {
     const requestString = await getRequestString(originalRequest);
 
     if (!store.has(requestString)) {
-      throw Error("request not mocked");
+      console.warn(
+        `metch: skipped ${originalRequest.method.toUpperCase()} ${originalRequest.url.toString()}`,
+      );
+      return originalFetch(originalRequest);
     }
 
     return store.get(requestString)!.clone();
